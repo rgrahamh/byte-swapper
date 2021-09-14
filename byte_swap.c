@@ -18,14 +18,19 @@ int main(int argc, char** argv){
     int swap_size = 16;
     // Third argument is optional; a 16-bit swap will be used if nothing is passed in
     if(argc == 3){
-        swap_size = atoi(argv[2]);
-        printf("Doing a %i-bit swap.\n", swap_size);
+        swap_size = strtol(argv[2], NULL, 10);
+        if(swap_size <= 0){
+            printf("Cannot use swap size; please specify a positive, non-zero integer.\n");
+            return 1;
+        }
     }
 
     if(swap_size % 8){
         printf("Please use proper byte alignment.\n");
         return 3;
     }
+
+    printf("Doing a %i-bit swap.\n", swap_size);
 
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
@@ -37,8 +42,7 @@ int main(int argc, char** argv){
 
     int swap_num = swap_size / 8;
 
-    char char_buf[swap_num+1];
-    char_buf[swap_num] = '\0';
+    char char_buf[swap_num];
 
     for(int i = 0; i < size; i++){
         int buf_itr = swap_num - (i % swap_num) - 1;
@@ -54,6 +58,8 @@ int main(int argc, char** argv){
     for(int i = swap_num - (size % swap_num); i < swap_num; i++){
         fprintf(new_file, "%c", char_buf[i]);
     }
+
+    printf("Wrote to %s\n", new_file_name);
 
     fclose(new_file);
     fclose(file);
